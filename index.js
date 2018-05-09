@@ -29,9 +29,8 @@ class HtmlWebpackPlugin {
       cache: true,
       showErrors: true,
       chunks: 'all',
-      includeSiblingChunks: false,
-      includeChildrenChunks: false,
-      postIncludeChunkFilter: null,
+      includeRelatedChunks: { siblings: false, children: false },
+      relatedChunksFilter: null,
       excludeChunks: [],
       chunksSortMode: 'auto',
       meta: {},
@@ -112,18 +111,15 @@ class HtmlWebpackPlugin {
       const allChunks = compilation.getStats().toJson(chunkOnlyConfig).chunks;
       // Filter chunks (options.chunks and options.excludeCHunks)
       let chunks = self.filterChunks(allChunks, self.options.chunks, self.options.excludeChunks);
-      // Add sibling chunks
-      if (self.options.includeSiblingChunks) {
-        chunks = self.includeSiblingChunks(allChunks, chunks);
-      }
-      // Add children chunks
-      if (self.options.includeChildrenChunks) {
-        chunks = self.includeChildrenChunks(allChunks, chunks);
+
+      // Add related chunks
+      if (self.options.includeRelatedChunks.siblings || self.options.includeRelatedChunks.children) {
+        chunks = self.includeRelatedChunks(allChunks, chunks, self.options.includeRelatedChunks);
       }
 
-      // Filter chunks that may have been included by `includeSiblingChunks` and `includeChildrenChunks`
-      if (self.options.postIncludeChunkFilter && typeof self.options.postIncludeChunkFilter === 'function') {
-        chunks = self.options.postIncludeChunkFilter(chunks);
+      // Filter chunks that may have been included by `includeRelatedChunks`
+      if (self.options.relatedChunksFilter && typeof self.options.relatedChunksFilter === 'function') {
+        chunks = self.options.relatedChunksFilter(chunks);
       }
 
       // Sort chunks
@@ -371,30 +367,35 @@ class HtmlWebpackPlugin {
   }
 
   /**
-   * Helper to include splitted sibling chunks
+   * Helper to include splitted related chunks, e.g. siblings, children
    */
-  includeSiblingChunks (chunks, filteredChunks) {
-    return filteredChunks.reduce((prevChunk, curChunk) => {
-      const siblings = curChunk.siblings;
-      let siblingChunks = [];
-      if (siblings) {
-        siblingChunks = chunks.filter(chunk => siblings.indexOf(chunk.names[0]) !== -1);
-      }
-      return prevChunk.concat(curChunk, siblingChunks);
-    }, []);
-  }
+  includeRelatedChunks(chunks, filteredChunks, { siblings, children }) {
+    return filteredChunks.reduce((result, curChunk) => {
+      result = result.concat(curChunk);
 
-  /**
-   * Helper to include splitted children chunks
-   */
-  includeChildrenChunks(chunks, filteredChunks) {
-    return filteredChunks.reduce((prevChunk, curChunk) => {
-      const children = curChunk.children;
-      let childrenChunks = [];
-      if (children) {
-        childrenChunks = chunks.filter(chunk => children.indexOf(chunk.names[0]) !== -1);
+      if (siblings) {
+        const siblings = curChunk.siblings;
+        let siblingChunks = [];
+        if (siblings) {
+          siblingChunks = chunks.filter((chunk) => {
+            return siblings.indexOf(chunk.names[0]) !== -1;
+          });
+        }
+        result = result.concat(siblingChunks);
       }
-      return prevChunk.concat(curChunk, childrenChunks);
+
+      if (children) {
+        const children = curChunk.children;
+        let childrenChunks = [];
+        if (children) {
+          childrenChunks = chunks.filter(
+            (chunk) => children.indexOf(chunk.names[0]) !== -1
+          );
+        }
+        result = result.concat(childrenChunks);
+      }
+
+      return result;
     }, []);
   }
 
