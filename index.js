@@ -30,6 +30,7 @@ class HtmlWebpackPlugin {
       showErrors: true,
       chunks: 'all',
       includeSiblingChunks: false,
+      includeChildrenChunks: false,
       excludeChunks: [],
       chunksSortMode: 'auto',
       meta: {},
@@ -113,6 +114,10 @@ class HtmlWebpackPlugin {
       // Add sibling chunks
       if (self.options.includeSiblingChunks) {
         chunks = self.includeSiblingChunks(allChunks, chunks);
+      }
+      // Add children chunks
+      if (self.options.includeChildrenChunks) {
+        chunks = self.includeChildrenChunks(allChunks, chunks);
       }
       // Sort chunks
       chunks = self.sortChunks(chunks, self.options.chunksSortMode, compilation);
@@ -369,6 +374,20 @@ class HtmlWebpackPlugin {
         siblingChunks = chunks.filter(chunk => siblings.indexOf(chunk.names[0]) !== -1);
       }
       return prevChunk.concat(curChunk, siblingChunks);
+    }, []);
+  }
+
+  /**
+   * Helper to include splitted children chunks
+   */
+  includeChildrenChunks(chunks, filteredChunks) {
+    return filteredChunks.reduce((prevChunk, curChunk) => {
+      const children = curChunk.children;
+      let childrenChunks = [];
+      if (children) {
+        childrenChunks = chunks.filter(chunk => children.indexOf(chunk.names[0]) !== -1);
+      }
+      return prevChunk.concat(curChunk, childrenChunks);
     }, []);
   }
 
