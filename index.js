@@ -369,31 +369,20 @@ class HtmlWebpackPlugin {
   /**
    * Helper to include splitted related chunks, e.g. siblings, children
    */
-  includeRelatedChunks(chunks, filteredChunks, { siblings, children }) {
+  includeRelatedChunks(chunks, filteredChunks, relatives = { siblings: false, children: false }) {
+    const getRelatedChunks = (chunk, relation) => {
+      const relations = chunk[relation];
+      return relations
+        ? chunks.filter((chunk) => relations.indexOf(chunk.names[0]) !== -1)
+        : [];
+    };
     return filteredChunks.reduce((result, curChunk) => {
       result = result.concat(curChunk);
-
-      if (siblings) {
-        const siblings = curChunk.siblings;
-        let siblingChunks = [];
-        if (siblings) {
-          siblingChunks = chunks.filter((chunk) => {
-            return siblings.indexOf(chunk.names[0]) !== -1;
-          });
-        }
-        result = result.concat(siblingChunks);
-      }
-
-      if (children) {
-        const children = curChunk.children;
-        let childrenChunks = [];
-        if (children) {
-          childrenChunks = chunks.filter(
-            (chunk) => children.indexOf(chunk.names[0]) !== -1
-          );
-        }
-        result = result.concat(childrenChunks);
-      }
+      Object.keys(relatives)
+        .filter((relativeKey) => relatives[relativeKey])
+        .forEach((relativeKey) => {
+          result = result.concat(getRelatedChunks(curChunk, relativeKey));
+        });
 
       return result;
     }, []);
