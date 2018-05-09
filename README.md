@@ -123,6 +123,7 @@ Allowed values are as follows
 |**[`chunks`](#)**|`{?}`|`?`|Allows you to add only some chunks (e.g only the unit-test chunk)|
 |**[`includeSiblingChunks`](#)**|`{Boolean}`|`false`|Include all other splitted chunks of `chunks` option. (For chunks splitted by webpack4's `optimization.splitChunks`)|
 |**[`includeChildrenChunks`](#)**|`{Boolean}`|`false`|Include all children chunks of `chunks` option. (For chunks identified as children by webpack4, e.g. dynamic `import()` chunks)|
+|**[`postIncludeChunkFilter`](#)**|`{Function}`|`null`|A function that can be used to filter chunks that may have been included by `includeSiblingChunks` and `includeChildrenChunks`. Occurs after initial filtering (via `chunks` and `excludeChunks`), after `includeSiblingChunks` and `includeChildrenChunks`, and before chunk sorting. Receives an array of the filtered/included chunks, should return an array of chunks.|
 |**[`chunksSortMode`](#plugins)**|`{String\|Function}`|`auto`|Allows to control how chunks should be sorted before they are included to the HTML. Allowed values are `'none' \| 'auto' \| 'dependency' \| 'manual' \| {Function}`|
 |**[`excludeChunks`](#)**|`{Array.<string>}`|``|Allows you to skip some chunks (e.g don't add the unit-test chunk)|
 |**[`xhtml`](#)**|`{Boolean}`|`false`|If `true` render the `link` tags as self-closing (XHTML compliant)|

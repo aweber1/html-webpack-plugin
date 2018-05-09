@@ -31,6 +31,7 @@ class HtmlWebpackPlugin {
       chunks: 'all',
       includeSiblingChunks: false,
       includeChildrenChunks: false,
+      postIncludeChunkFilter: null,
       excludeChunks: [],
       chunksSortMode: 'auto',
       meta: {},
@@ -119,6 +120,12 @@ class HtmlWebpackPlugin {
       if (self.options.includeChildrenChunks) {
         chunks = self.includeChildrenChunks(allChunks, chunks);
       }
+
+      // Filter chunks that may have been included by `includeSiblingChunks` and `includeChildrenChunks`
+      if (self.options.postIncludeChunkFilter && typeof self.options.postIncludeChunkFilter === 'function') {
+        chunks = self.options.postIncludeChunkFilter(chunks);
+      }
+
       // Sort chunks
       chunks = self.sortChunks(chunks, self.options.chunksSortMode, compilation);
       // Let plugins alter the chunks and the chunk sorting
