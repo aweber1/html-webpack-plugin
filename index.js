@@ -373,7 +373,7 @@ class HtmlWebpackPlugin {
     const getRelatedChunks = (chunk, relation) => {
       const relations = chunk[relation];
       return relations
-        ? chunks.filter((chunk) => relations.indexOf(chunk.names[0]) !== -1)
+        ? chunks.filter((chunk) => relations.indexOf(chunk.names[0]) !== -1 || relations.indexOf(chunk.id) !== -1)
         : [];
     };
     return filteredChunks.reduce((result, curChunk) => {
